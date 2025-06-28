@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 
 class PequeModel(BaseModel):
@@ -36,3 +36,4 @@ class PequeModel(BaseModel):
 
     # ✅ Campo de algoritmo de score_normalize
     score_normalized: Optional[float] = None
+    popular_times: Optional[List[Dict[str, Any]]] = None

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 
 class PequeSchema(BaseModel):
@@ -34,6 +34,7 @@ class PequeSchema(BaseModel):
     unsupported_extensions: Optional[str]
     website: Optional[str]
     description: Optional[str]
+    popular_times: Optional[List[Dict[str, Any]]] = None
 
 
 

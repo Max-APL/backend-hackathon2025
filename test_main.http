@@ -14,3 +14,23 @@ Content-Type: application/json
   "whatsapp": "+59177777777",
   "tipo_negocio": "restaurante"
 }
+
+
+### Scrapear nuevos comercios cercanos
+GET http://localhost:8000/peques/scrapear?lat=-16.5206962&lng=-68.17594319999999&tipo=restaurante
+
+
+
+### 1. Iniciar scraping (llama al webhook de N8N)
+POST http://localhost:8000/peques/scrapear-url?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
+Content-Type: application/json
+
+### 2. Obtener resultados cercanos desde hoja Results
+GET http://localhost:8000/peques/resultados-cercanos?lat=-16.545103&lng=-68.17594319999999&max_km=1.0
+Accept: application/json
+
+
+
+### Endpoint combinado: iniciar scraping y obtener negocios cercanos
+GET http://localhost:8000/peques/scrapear-y-filtrar?lat=-16.5206962&lng=-68.2064785&tipo=restaurante
+Accept: application/json
