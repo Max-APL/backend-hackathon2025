@@ -2,13 +2,28 @@ from typing import Tuple
 import base64
 import uuid
 from datetime import datetime
-from app.core.firebase_config import firebase_config
+import logging
+
+logger = logging.getLogger(__name__)
 
 class StorageService:
     """Servicio para operaciones de Firebase Storage."""
     
     def __init__(self):
-        self.bucket = firebase_config.storage_bucket
+        self.bucket = None
+        self._initialized = False
+        self._initialize_storage()
+    
+    def _initialize_storage(self):
+        """Inicializa el servicio de storage de forma segura."""
+        try:
+            from app.core.firebase_config import firebase_config
+            self.bucket = firebase_config.storage_bucket
+            self._initialized = True
+            logger.info("✅ Storage service inicializado correctamente")
+        except Exception as e:
+            logger.error(f"❌ Error inicializando storage service: {e}")
+            self._initialized = False
     
     def get_image(self, filename: str) -> Tuple[bytes, str]:
         """
@@ -24,6 +39,9 @@ class StorageService:
             FileNotFoundError: Si el archivo no existe
             Exception: Para otros errores
         """
+        if not self._initialized or not self.bucket:
+            raise Exception("Storage service no está inicializado")
+        
         try:
             # Obtener el blob (archivo) desde Firebase Storage
             blob = self.bucket.blob(filename)
@@ -68,6 +86,9 @@ class StorageService:
             ValueError: Si el base64 es inválido
             Exception: Para otros errores
         """
+        if not self._initialized or not self.bucket:
+            raise Exception("Storage service no está inicializado")
+        
         try:
             # Limpiar el base64 si viene con data URL
             if base64_data.startswith('data:'):
@@ -138,6 +159,9 @@ class StorageService:
         Raises:
             Exception: Para errores de eliminación
         """
+        if not self._initialized or not self.bucket:
+            raise Exception("Storage service no está inicializado")
+        
         try:
             blob = self.bucket.blob(filename)
             blob.delete()
@@ -156,6 +180,9 @@ class StorageService:
         Returns:
             bool: True si existe, False en caso contrario
         """
+        if not self._initialized or not self.bucket:
+            return False
+        
         try:
             blob = self.bucket.blob(filename)
             return blob.exists()

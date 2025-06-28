@@ -19,6 +19,7 @@ db = None
 # Constantes
 CREDENTIALS_FILE = "hackaton-a44c8-f3d9ad76a54d.json"
 USE_LOCAL_CREDENTIALS = os.path.exists(CREDENTIALS_FILE)
+STORAGE_BUCKET = "hackaton-a44c8.firebasestorage.app"
 
 
 def init_firebase():
@@ -26,39 +27,50 @@ def init_firebase():
     try:
         import firebase_admin
         from firebase_admin import credentials, firestore
-        from app.core import firebase_config
-
+        
+        # Verificar si Firebase ya está inicializado
         try:
             firebase_admin.get_app()
             logger.info("✅ Firebase app ya inicializada")
+            firebase_initialized = True
         except ValueError:
             logger.info("🔄 Inicializando Firebase app...")
             try:
                 if USE_LOCAL_CREDENTIALS:
                     cred = credentials.Certificate(CREDENTIALS_FILE)
-                    firebase_admin.initialize_app(cred)
+                    firebase_admin.initialize_app(cred, {
+                        'storageBucket': STORAGE_BUCKET
+                    })
                     logger.info("📁 Credenciales locales usadas")
                 else:
-                    firebase_admin.initialize_app()
+                    # En Cloud Run, usar Application Default Credentials
+                    firebase_admin.initialize_app({
+                        'storageBucket': STORAGE_BUCKET
+                    })
                     logger.info("☁️ Application Default Credentials usadas")
+                firebase_initialized = True
             except Exception as e:
                 logger.error(f"❌ Error inicializando Firebase: {e}")
                 return
 
-        firebase_initialized = True
+        # Solo inicializar firebase_config si Firebase está disponible
+        if firebase_initialized:
+            try:
+                from app.core.firebase_config import firebase_config
+                firebase_config.initialize()
+                logger.info("✅ Firebase config inicializada")
+            except Exception as e:
+                logger.error(f"❌ Error en firebase_config: {e}")
+                # Continuar sin firebase_config
 
-        try:
-            firebase_config.initialize()
-            logger.info("✅ Firebase config inicializada")
-        except Exception as e:
-            logger.error(f"❌ Error en firebase_config: {e}")
-
-        try:
-            db = firestore.client()
-            logger.info("✅ Conexión con Firestore establecida.")
-        except Exception as e:
-            logger.error(f"❌ Error conectando a Firestore: {e}")
-            db = None
+        # Obtener cliente de Firestore
+        if firebase_initialized:
+            try:
+                db = firestore.client()
+                logger.info("✅ Conexión con Firestore establecida")
+            except Exception as e:
+                logger.error(f"❌ Error conectando a Firestore: {e}")
+                db = None
 
     except ImportError as e:
         logger.error(f"❌ Firebase Admin no disponible: {e}")
@@ -109,6 +121,7 @@ def health_check():
 def test_firestore_connection():
     if not firebase_initialized or not db:
         raise HTTPException(status_code=500, detail="Firestore no está disponible")
+
     try:
         doc_ref = db.collection("test_collection").document("test_doc")
         doc_ref.set({"message": "Hola desde FastAPI!"})
@@ -127,6 +140,7 @@ def test_webhook():
         import requests
         url = "https://maxpasten.app.n8n.cloud/webhook-test/f182d304-1d67-4798-bd58-24dc84caec48"
         response = requests.get(url)
+
         return {
             "status_code": response.status_code,
             "response_text": response.text,
