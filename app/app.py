@@ -1,8 +1,21 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
+import firebase_admin
+from firebase_admin import credentials, firestore
+from app.api.v1.api_router import router as api_router
 from app.core.firebase_config import firebase_config
-from app.api.v1.api_router import api_router
 import requests
+from app.api.v1.api_router import router as api_router
+
+# --- CONFIGURACIÓN DE FIREBASE ---
+# Cargar las credenciales desde el archivo de clave de servicio
+cred = credentials.Certificate("hackaton-a44c8-firebase-adminsdk-fbsvc-9e2a2b3314.json")
+
+# Inicializar la app de Firebase. Solo se hace una vez.
+try:
+    firebase_admin.get_app()
+except ValueError:
+    firebase_admin.initialize_app(cred)
 
 # Inicializar Firebase
 firebase_config.initialize()
@@ -11,6 +24,12 @@ app = FastAPI(
     title="Barrio Fuerte - Motor de Análisis",
     version="0.1.0"
 )
+
+# Obtener una referencia a la base de datos de Firestore
+db = firestore.client()
+print("✅ Conexión con Firestore establecida.")
+# --- FIN DE CONFIGURACIÓN ---
+
 
 # Incluir el router de la API v1
 app.include_router(api_router, prefix="/api/v1")
