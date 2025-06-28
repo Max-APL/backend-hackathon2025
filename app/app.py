@@ -6,16 +6,24 @@ from app.api.v1.api_router import router as api_router
 from app.core.firebase_config import firebase_config
 import requests
 from app.api.v1.api_router import router as api_router
+import os
 
 # --- CONFIGURACIÓN DE FIREBASE ---
-# Cargar las credenciales desde el archivo de clave de servicio
-cred = credentials.Certificate("hackaton-a44c8-firebase-adminsdk-fbsvc-9e2a2b3314.json")
+# Usar Application Default Credentials para GCP
+# En desarrollo local, esto usará las credenciales del archivo JSON
+# En Cloud Run, esto usará las credenciales del servicio automáticamente
 
 # Inicializar la app de Firebase. Solo se hace una vez.
 try:
     firebase_admin.get_app()
 except ValueError:
-    firebase_admin.initialize_app(cred)
+    # Si estamos en desarrollo local y existe el archivo de credenciales
+    if os.path.exists("hackaton-a44c8-f3d9ad76a54d.json"):
+        cred = credentials.Certificate("hackaton-a44c8-f3d9ad76a54d.json")
+        firebase_admin.initialize_app(cred)
+    else:
+        # En Cloud Run, usar Application Default Credentials
+        firebase_admin.initialize_app()
 
 # Inicializar Firebase
 firebase_config.initialize()
