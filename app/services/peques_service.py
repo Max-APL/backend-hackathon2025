@@ -132,31 +132,6 @@ async def scrapear_y_retornar_cercanos_async(lat: float, lng: float, tipo: str =
     print("❌ No se encontró scrapeo válido en Results después del tiempo de espera")
     return {"error": "No se encontró un resultado cercano registrado por el N8N"}
 
-def get_nearby_peques(lat, lng, max_km=1.0):
-    rows = leer_hoja_results()
-    cercanos = []
-    for row in rows:
-        try:
-            coords = eval(row.get("gps_coordinates", "{}"))
-            lat2 = coords.get("latitude")
-            lng2 = coords.get("longitude")
-            if lat2 is not None and lng2 is not None:
-                dist = calcular_distancia_km(lat, lng, lat2, lng2)
-                if dist <= max_km:
-                    row["score_normalized"] = calculate_score_normalized(row)
-                    cercanos.append(row)
-        except Exception:
-            continue
-    return cercanos
-
-
-def scrapear_y_retornar_cercanos(lat: float, lng: float, tipo: str = "restaurante"):
-    url = generar_url_scraping(tipo, lat, lng)
-    agregar_a_hoja_scrape(url)
-    requests.get(N8N_WEBHOOK_URL)
-    time.sleep(4)  # Espera a que el n8n actualice la hoja
-    return get_nearby_peques(lat, lng)
-
 def get_nearby_peques(lat, lng, max_km=1.5):
     rows = leer_hoja_results()
     cercanos = []
@@ -176,6 +151,13 @@ def get_nearby_peques(lat, lng, max_km=1.5):
             continue
 
     return cercanos
+
+def scrapear_y_retornar_cercanos(lat: float, lng: float, tipo: str = "restaurante"):
+    url = generar_url_scraping(tipo, lat, lng)
+    agregar_a_hoja_scrape(url)
+    requests.get(N8N_WEBHOOK_URL)
+    time.sleep(4)  # Espera a que el n8n actualice la hoja
+    return get_nearby_peques(lat, lng)
 
 def lanzar_n8n():
     try:

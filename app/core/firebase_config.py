@@ -26,7 +26,7 @@ class FirebaseConfig:
                 })
             else:
                 # En desarrollo local, usar archivo de credenciales
-                cred_path = "hackaton-a44c8-firebase-adminsdk-fbsvc-9e2a2b3314.json"
+                cred_path = "hackaton-a44c8-f3d9ad76a54d.json"
                 if os.path.exists(cred_path):
                     cred = credentials.Certificate(cred_path)
                     firebase_admin.initialize_app(cred, {

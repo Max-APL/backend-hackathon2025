@@ -8,12 +8,12 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código de la aplicación
+# Copiar todo el código de la aplicación (excluyendo archivos sensibles via .dockerignore)
 COPY . .
 
 # Exponer el puerto en el que la app se ejecuta
 EXPOSE 8080
 
 # Comando para correr la aplicación usando uvicorn
-# Nota: Google Cloud Run setea la variable de entorno PORT.
-CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "8080"]
+# Primero probamos con la app minimal, luego con la app completa
+CMD ["sh", "-c", "python simple_startup.py"]
