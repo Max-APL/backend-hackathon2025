@@ -1,11 +1,41 @@
-# Test your FastAPI endpoints
-
-GET http://127.0.0.1:8000/
+### 🔍 Obtener datos desde la hoja "Results" (fija en backend)
+GET http://localhost:8000/peques/from-sheet
 Accept: application/json
 
-###
 
-GET http://127.0.0.1:8000/hello/User
+### Registrar un nuevo peque (comercio)
+POST http://localhost:8000/peques/registrar
+Content-Type: application/json
+
+{
+  "nombre": "Mi Restaurante de Prueba",
+  "ubicacion": "-16.5206962,-68.2064785",
+  "correo": "miemail@ejemplo.com",
+  "whatsapp": "+59177777777",
+  "tipo_negocio": "restaurante"
+}
+
+
+### Scrapear nuevos comercios cercanos
+GET http://localhost:8000/peques/scrapear?lat=-16.5206962&lng=-68.17594319999999&tipo=restaurante
+
+
+
+### 1. Iniciar scraping (llama al webhook de N8N)
+POST http://localhost:8000/peques/scrapear-url?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
+Content-Type: application/json
+
+### 2. Obtener resultados cercanos desde hoja Results
+GET http://localhost:8000/peques/resultados-cercanos?lat=-16.545103&lng=-68.17594319999999&max_km=1.0
 Accept: application/json
 
-###
+
+
+### Endpoint combinado: iniciar scraping y obtener negocios cercanos
+GET http://localhost:8000/peques/scrapear-y-filtrar?lat=-16.5206962&lng=-68.2064785&tipo=restaurante
+Accept: application/json
+
+
+### 3. Endpoint combinado: Scrapear y obtener resultados (inteligente)
+POST http://localhost:8000/peques/scrapear-y-buscar?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
+Accept: application/json
