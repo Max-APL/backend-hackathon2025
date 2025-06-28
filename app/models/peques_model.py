@@ -1,35 +1,31 @@
+from typing import Optional
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Union
 
-class GPSCoordinates(BaseModel):
-    latitude: float
-    longitude: float
-
-class PequeEmpresaResponse(BaseModel):
-    position: Optional[int]
+class PequeModel(BaseModel):
+    position: Optional[str]
     title: Optional[str]
     place_id: Optional[str]
     data_id: Optional[str]
     data_cid: Optional[str]
     reviews_link: Optional[str]
     photos_link: Optional[str]
-    gps_coordinates: Optional[GPSCoordinates]
+    gps_coordinates: Optional[str]
     place_id_search: Optional[str]
     provider_id: Optional[str]
-    rating: Optional[float]
-    reviews: Optional[int]
-    unclaimed_listing: Optional[Union[str, bool]]
+    rating: Optional[str]
+    reviews: Optional[str]
+    unclaimed_listing: Optional[str]
     type: Optional[str]
-    types: Optional[List[str]]
+    types: Optional[str]
     type_id: Optional[str]
-    type_ids: Optional[List[str]]
+    type_ids: Optional[str]
     address: Optional[str]
     open_state: Optional[str]
     hours: Optional[str]
-    operating_hours: Optional[Dict[str, str]]
+    operating_hours: Optional[str]
     phone: Optional[str]
     extensions: Optional[str]
-    service_options: Optional[List[Dict[str, List[str]]]]
+    service_options: Optional[str]
     thumbnail: Optional[str]
     serpapi_thumbnail: Optional[str]
     price: Optional[str]
@@ -37,3 +33,6 @@ class PequeEmpresaResponse(BaseModel):
     unsupported_extensions: Optional[str]
     website: Optional[str]
     description: Optional[str]
+
+    # ✅ Campo de algoritmo de score_normalize
+    score_normalized: Optional[float] = None
