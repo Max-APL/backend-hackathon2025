@@ -15,6 +15,5 @@ COPY . .
 EXPOSE 8080
 
 # Comando para correr la aplicación usando uvicorn
-# Cloud Run setea la variable de entorno PORT, usamos $PORT o 8080 como fallback
-# Agregamos --log-level info para mejor debugging
-CMD ["sh", "-c", "uvicorn app.app:app --host 0.0.0.0 --port ${PORT:-8080} --log-level info"]
+# Primero probamos con la app minimal, luego con la app completa
+CMD ["sh", "-c", "python simple_startup.py"]
