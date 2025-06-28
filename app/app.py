@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 import firebase_admin
 from firebase_admin import credentials, firestore
+from app.api.v1.api_router import router as api_router
 
 # --- CONFIGURACIÓN DE FIREBASE ---
 # Cargar las credenciales desde el archivo de clave de servicio
@@ -22,6 +23,9 @@ app = FastAPI(
     title="Barrio Fuerte - Motor de Análisis",
     version="0.1.0"
 )
+
+# Incluir el router de la API v1
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/", tags=["Health Check"])
 def read_root():
