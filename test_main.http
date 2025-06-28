@@ -37,5 +37,5 @@ Accept: application/json
 
 
 ### 3. Endpoint combinado: Scrapear y obtener resultados (inteligente) FINAL ESTE SI AL FIN
-POST https://backend-hackathon2025-240363371566.us-central1.run.app/api/v1/peques/scrapear-y-buscar?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
+POST http://localhost:8000/api/v1/peques/scrapear-y-buscar?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
 Accept: application/json
