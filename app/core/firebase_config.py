@@ -3,6 +3,9 @@ from firebase_admin import credentials, firestore, storage
 from typing import Optional, Any
 import os
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class FirebaseConfig:
     """Configuración y gestión de Firebase."""
@@ -18,27 +21,16 @@ class FirebaseConfig:
             return
         
         try:
-            # Intentar usar credenciales desde variable de entorno (GCP)
-            if os.getenv('GOOGLE_APPLICATION_CREDENTIALS') or os.getenv('FIREBASE_CREDENTIALS'):
-                # En GCP, usar credenciales por defecto
-                firebase_admin.initialize_app({
-                    'storageBucket': 'hackaton-a44c8.firebasestorage.app'
-                })
-            else:
-                # En desarrollo local, usar archivo de credenciales
-                cred_path = "hackaton-a44c8-f3d9ad76a54d.json"
-                if os.path.exists(cred_path):
-                    cred = credentials.Certificate(cred_path)
-                    firebase_admin.initialize_app(cred, {
-                        'storageBucket': 'hackaton-a44c8.firebasestorage.app'
-                    })
-                else:
-                    # Fallback: intentar inicializar sin credenciales específicas
-                    firebase_admin.initialize_app({
-                        'storageBucket': 'hackaton-a44c8.firebasestorage.app'
-                    })
+            # Verificar si Firebase ya está inicializado
+            try:
+                firebase_admin.get_app()
+                logger.info("✅ Firebase ya inicializado, usando configuración existente")
+            except ValueError:
+                # Firebase no está inicializado, pero no lo inicializamos aquí
+                # porque ya se hizo en app.py
+                logger.info("⚠️ Firebase no inicializado en firebase_config, usando configuración de app.py")
             
-            # Obtener referencias
+            # Obtener referencias usando la configuración existente
             self._firestore_client = firestore.client()
             self._storage_bucket = storage.bucket()
             
@@ -46,19 +38,9 @@ class FirebaseConfig:
             print("✅ Conexión con Firestore y Storage establecida.")
             
         except Exception as e:
-            print(f"❌ Error al inicializar Firebase: {str(e)}")
-            # En caso de error, intentar inicializar sin configuración específica
-            try:
-                firebase_admin.initialize_app({
-                    'storageBucket': 'hackaton-a44c8.firebasestorage.app'
-                })
-                self._firestore_client = firestore.client()
-                self._storage_bucket = storage.bucket()
-                self._initialized = True
-                print("✅ Conexión con Firebase establecida (modo fallback).")
-            except Exception as fallback_error:
-                print(f"❌ Error en modo fallback: {str(fallback_error)}")
-                raise
+            print(f"❌ Error al inicializar Firebase config: {str(e)}")
+            # No intentar inicializar Firebase aquí, solo manejar el error
+            self._initialized = False
     
     @property
     def firestore(self) -> Any:

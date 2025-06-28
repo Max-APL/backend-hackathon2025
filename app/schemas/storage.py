@@ -16,8 +16,8 @@ class ImageUploadResponse(BaseModel):
     content_type: str
     uploaded_at: str
     
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "success": True,
                 "filename": "20241201_143022_123.jpg",
@@ -27,4 +27,5 @@ class ImageUploadResponse(BaseModel):
                 "content_type": "image/jpeg",
                 "uploaded_at": "2024-12-01T14:30:22.123456Z"
             }
-        } 
+        }
+    } 
