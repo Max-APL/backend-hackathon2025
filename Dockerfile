@@ -16,4 +16,4 @@ EXPOSE 8080
 
 # Comando para correr la aplicación usando uvicorn
 # Nota: Google Cloud Run setea la variable de entorno PORT.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.app:app", "--host", "0.0.0.0", "--port", "8080"]
