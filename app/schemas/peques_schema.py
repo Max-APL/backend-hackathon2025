@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+
 
 class PequeSchema(BaseModel):
     position: Optional[str]
@@ -33,3 +34,15 @@ class PequeSchema(BaseModel):
     unsupported_extensions: Optional[str]
     website: Optional[str]
     description: Optional[str]
+
+
+
+class PequeRegistroRequest(BaseModel):
+    nombre: str
+    correo: str
+    whatsapp: str
+    tipo_negocio: str
+    ubicacion: str  # Ejemplo: "-17.6822538,-63.1525464"
+
+class PequeRegistroResponse(BaseModel):
+    nearby_peques: List[dict]

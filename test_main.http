@@ -1,3 +1,16 @@
 ### 🔍 Obtener datos desde la hoja "Results" (fija en backend)
-GET https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJC5i7REnh8ZMRSUUZwe5BbG8&api_key=d438f066067aa4d0dc9da4415441d6fd9b99ee307cec2f6ed1cea2db3e823096
+GET http://localhost:8000/peques/from-sheet
 Accept: application/json
+
+
+### Registrar un nuevo peque (comercio)
+POST http://localhost:8000/peques/registrar
+Content-Type: application/json
+
+{
+  "nombre": "Mi Restaurante de Prueba",
+  "ubicacion": "-16.5206962,-68.2064785",
+  "correo": "miemail@ejemplo.com",
+  "whatsapp": "+59177777777",
+  "tipo_negocio": "restaurante"
+}
