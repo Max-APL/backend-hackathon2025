@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 .idea/vcs.xml
+*.pyc
 
 # C extensions
 *.so
