@@ -1,7 +1,9 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import peques
+from app.api.v1.endpoints import storage, peques
 
 api_router = APIRouter()
+
+# Incluir el router de peques
 api_router.include_router(peques.router, tags=["Peques"])
 
 # Incluir el router de storage
