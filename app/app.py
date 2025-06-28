@@ -6,6 +6,11 @@ from app.api.v1.api_router import router as api_router
 from app.core.firebase_config import firebase_config
 import requests
 import os
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # --- CONFIGURACIÓN DE FIREBASE ---
 # Usar Application Default Credentials para GCP
@@ -15,17 +20,30 @@ import os
 # Inicializar la app de Firebase. Solo se hace una vez.
 try:
     firebase_admin.get_app()
+    logger.info("✅ Firebase app ya inicializada")
 except ValueError:
-    # Si estamos en desarrollo local y existe el archivo de credenciales
-    if os.path.exists("hackaton-a44c8-f3d9ad76a54d.json"):
-        cred = credentials.Certificate("hackaton-a44c8-f3d9ad76a54d.json")
-        firebase_admin.initialize_app(cred)
-    else:
-        # En Cloud Run, usar Application Default Credentials
-        firebase_admin.initialize_app()
+    logger.info("🔄 Inicializando Firebase app...")
+    try:
+        # Si estamos en desarrollo local y existe el archivo de credenciales
+        if os.path.exists("hackaton-a44c8-f3d9ad76a54d.json"):
+            logger.info("📁 Usando credenciales locales")
+            cred = credentials.Certificate("hackaton-a44c8-f3d9ad76a54d.json")
+            firebase_admin.initialize_app(cred)
+        else:
+            # En Cloud Run, usar Application Default Credentials
+            logger.info("☁️ Usando Application Default Credentials")
+            firebase_admin.initialize_app()
+        logger.info("✅ Firebase app inicializada exitosamente")
+    except Exception as e:
+        logger.error(f"❌ Error inicializando Firebase: {e}")
+        # Continuar sin Firebase si hay error
 
 # Inicializar Firebase
-firebase_config.initialize()
+try:
+    firebase_config.initialize()
+    logger.info("✅ Firebase config inicializada")
+except Exception as e:
+    logger.error(f"❌ Error inicializando Firebase config: {e}")
 
 app = FastAPI(
     title="Barrio Fuerte - Motor de Análisis",
@@ -33,22 +51,43 @@ app = FastAPI(
 )
 
 # Obtener una referencia a la base de datos de Firestore
-db = firestore.client()
-print("✅ Conexión con Firestore establecida.")
+try:
+    db = firestore.client()
+    logger.info("✅ Conexión con Firestore establecida.")
+except Exception as e:
+    logger.error(f"❌ Error conectando a Firestore: {e}")
+    db = None
+
 # --- FIN DE CONFIGURACIÓN ---
 
-
 # Incluir el router de la API v1
-app.include_router(api_router, prefix="/api/v1")
+try:
+    app.include_router(api_router, prefix="/api/v1")
+    logger.info("✅ API router incluido")
+except Exception as e:
+    logger.error(f"❌ Error incluyendo API router: {e}")
 
 @app.get("/", tags=["Health Check"])
 def read_root():
     """Endpoint raíz para verificar que la API está viva."""
-    return {"status": "API online"}
+    return {"status": "API online", "message": "Barrio Fuerte Backend funcionando correctamente"}
+
+@app.get("/health", tags=["Health Check"])
+def health_check():
+    """Endpoint de health check más detallado."""
+    health_status = {
+        "status": "healthy",
+        "firebase_initialized": firebase_config._initialized if hasattr(firebase_config, '_initialized') else False,
+        "firestore_connected": db is not None
+    }
+    return health_status
 
 @app.get("/test-firestore", tags=["Tests"])
 def test_firestore_connection():
     """Endpoint para probar la escritura y lectura en Firestore."""
+    if not db:
+        raise HTTPException(status_code=500, detail="Firestore no está disponible")
+    
     try:
         # Asegurar que Firebase esté inicializado
         firebase_config.initialize()

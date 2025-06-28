@@ -1,8 +1,7 @@
 import time
-from http.client import HTTPException
 from typing import List
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 import requests
 
 from app.models.peques_model import PequeModel
