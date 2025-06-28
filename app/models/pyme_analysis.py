@@ -1,6 +1,22 @@
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
+class TimeSlot(BaseModel):
+    """Modelo para un horario específico"""
+    time: str = Field(..., description="Hora del día (ej: '6 AM', '12 PM')")
+    busyness_score: int = Field(..., ge=0, le=100, description="Puntuación de ocupación de 0 a 100")
+    info: Optional[str] = Field(default=None, description="Información adicional sobre el horario")
+
+class DaySchedule(BaseModel):
+    """Modelo para el horario de un día específico"""
+    day: str = Field(..., description="Día de la semana")
+    time_slots: List[TimeSlot] = Field(..., description="Lista de horarios del día")
+
+class PopularTimes(BaseModel):
+    """Modelo para datos de horarios populares"""
+    graph_results: Dict[str, List[TimeSlot]] = Field(..., description="Resultados por día de la semana")
+    live_hash: Optional[Dict[str, str]] = Field(default=None, description="Información en tiempo real")
+
 class PymeAnalysis(BaseModel):
     """Modelo para datos básicos de Pyme"""
     address: str = Field(..., description="Dirección del negocio")
@@ -15,6 +31,7 @@ class PymeAnalysis(BaseModel):
     type: str = Field(..., description="Tipo de negocio")
     website: str = Field(..., description="Sitio web del negocio")
     prompt: Optional[str] = Field(default=None, description="Prompt personalizado para el análisis (opcional)")
+    popular_times: Optional[PopularTimes] = Field(default=None, description="Datos de horarios populares (opcional)")
 
 class CategoryScore(BaseModel):
     """Modelo para puntuación de categoría individual"""

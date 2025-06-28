@@ -71,6 +71,89 @@ class PymeService:
         """
         Construye el prompt usando el prompt personalizado proporcionado por el usuario
         """
+        # Preparar datos de popular_times si están disponibles
+        popular_times_info = ""
+        popular_times_analysis = ""
+        
+        if pyme_data.get('popular_times'):
+            popular_times = pyme_data['popular_times']
+            if popular_times.get('graph_results'):
+                # Calcular promedio de ocupación por día
+                daily_averages = {}
+                total_busyness = 0
+                total_active_slots = 0
+                
+                for day, time_slots in popular_times['graph_results'].items():
+                    if time_slots:
+                        # Filtrar slots con busyness_score > 0 (horarios abiertos)
+                        active_slots = [slot for slot in time_slots if slot.get('busyness_score', 0) > 0]
+                        if active_slots:
+                            avg_busyness = sum(slot.get('busyness_score', 0) for slot in active_slots) / len(active_slots)
+                            daily_averages[day] = round(avg_busyness, 1)
+                            total_busyness += sum(slot.get('busyness_score', 0) for slot in active_slots)
+                            total_active_slots += len(active_slots)
+                
+                # Calcular promedio general de ocupación
+                overall_avg = round(total_busyness / total_active_slots, 1) if total_active_slots > 0 else 0
+                
+                # Encontrar horarios pico (muy ocupados)
+                peak_hours = []
+                for day, time_slots in popular_times['graph_results'].items():
+                    for slot in time_slots:
+                        if slot.get('busyness_score', 0) >= 80:  # Muy ocupado
+                            peak_hours.append(f"{day} {slot.get('time', '')} ({slot.get('busyness_score', 0)}%)")
+                
+                # Encontrar días más ocupados
+                sorted_days = sorted(daily_averages.items(), key=lambda x: x[1], reverse=True)
+                busiest_days = sorted_days[:3]  # Top 3 días más ocupados
+                
+                # Encontrar horarios más ocupados por día
+                peak_times_by_day = {}
+                for day, time_slots in popular_times['graph_results'].items():
+                    if time_slots:
+                        max_slot = max(time_slots, key=lambda x: x.get('busyness_score', 0))
+                        if max_slot.get('busyness_score', 0) > 0:
+                            peak_times_by_day[day] = {
+                                'time': max_slot.get('time', ''),
+                                'score': max_slot.get('busyness_score', 0),
+                                'info': max_slot.get('info', '')
+                            }
+                
+                popular_times_info = f"""
+                
+                DATOS DE HORARIOS POPULARES:
+                - Promedio general de ocupación: {overall_avg}%
+                - Promedio por día: {daily_averages}
+                - Días más ocupados: {[f"{day} ({score}%)" for day, score in busiest_days]}
+                - Horarios pico (muy ocupados): {peak_hours[:8]}  # Top 8
+                - Horario más ocupado por día: {peak_times_by_day}
+                - Información en tiempo real: {popular_times.get('live_hash', {}).get('info', 'No disponible')}
+                """
+                
+                # Análisis específico de popular_times para el prompt
+                popular_times_analysis = f"""
+                
+                ANÁLISIS ESPECÍFICO DE HORARIOS Y DEMANDA:
+                
+                **Patrones de Ocupación:**
+                - Ocupación promedio general: {overall_avg}%
+                - Días de mayor actividad: {[day for day, _ in busiest_days]}
+                - Días de menor actividad: {[day for day, _ in sorted_days[-3:]]}
+                
+                **Horarios Pico Identificados:**
+                {chr(10).join([f"- {peak}" for peak in peak_hours[:5]])}
+                
+                **Análisis de Rentabilidad por Horario:**
+                - Horarios de mayor demanda: {[f"{day} {data['time']} ({data['score']}%)" for day, data in list(peak_times_by_day.items())[:3]]}
+                - Horarios de menor demanda: {[f"{day} {data['time']} ({data['score']}%)" for day, data in list(peak_times_by_day.items())[-3:]]}
+                
+                **Implicaciones para el Negocio:**
+                - El negocio tiene una demanda {overall_avg}% de ocupación promedio
+                - Los días más rentables son: {[day for day, _ in busiest_days]}
+                - Los horarios pico sugieren una base de clientes estable
+                - Hay oportunidades de optimización en días de menor actividad
+                """
+        
         prompt = f"""
         {custom_prompt}
 
@@ -87,11 +170,15 @@ class PymeService:
             "title": "{pyme_data.get('title', '')}",
             "type": "{pyme_data.get('type', '')}",
             "website": "{pyme_data.get('website', '')}"
-        }}
+        }}{popular_times_info}{popular_times_analysis}
 
         IMPORTANTE: 
         - Responde ÚNICAMENTE con el JSON estructurado según el esquema proporcionado.
-        - El resumen del análisis debe tener entre 300-800 caracteres.
+        - El resumen del análisis debe ser ULTRA CONCISO (máximo 50 palabras).
+        - Si hay datos de horarios populares, inclúyelos en tu análisis.
+        - Los datos de popular_times son FUNDAMENTALES para evaluar la relevancia.
+        - Usa los patrones de ocupación para justificar el score de relevancia.
+        - **MANTÉN EL RESUMEN ULTRA BREVE Y DIRECTO AL PUNTO**.
         """
         
         return prompt
@@ -100,6 +187,89 @@ class PymeService:
         """
         Construye el prompt para el análisis de Pyme con score de relevancia único
         """
+        # Preparar datos de popular_times si están disponibles
+        popular_times_info = ""
+        popular_times_analysis = ""
+        
+        if pyme_data.get('popular_times'):
+            popular_times = pyme_data['popular_times']
+            if popular_times.get('graph_results'):
+                # Calcular promedio de ocupación por día
+                daily_averages = {}
+                total_busyness = 0
+                total_active_slots = 0
+                
+                for day, time_slots in popular_times['graph_results'].items():
+                    if time_slots:
+                        # Filtrar slots con busyness_score > 0 (horarios abiertos)
+                        active_slots = [slot for slot in time_slots if slot.get('busyness_score', 0) > 0]
+                        if active_slots:
+                            avg_busyness = sum(slot.get('busyness_score', 0) for slot in active_slots) / len(active_slots)
+                            daily_averages[day] = round(avg_busyness, 1)
+                            total_busyness += sum(slot.get('busyness_score', 0) for slot in active_slots)
+                            total_active_slots += len(active_slots)
+                
+                # Calcular promedio general de ocupación
+                overall_avg = round(total_busyness / total_active_slots, 1) if total_active_slots > 0 else 0
+                
+                # Encontrar horarios pico (muy ocupados)
+                peak_hours = []
+                for day, time_slots in popular_times['graph_results'].items():
+                    for slot in time_slots:
+                        if slot.get('busyness_score', 0) >= 80:  # Muy ocupado
+                            peak_hours.append(f"{day} {slot.get('time', '')} ({slot.get('busyness_score', 0)}%)")
+                
+                # Encontrar días más ocupados
+                sorted_days = sorted(daily_averages.items(), key=lambda x: x[1], reverse=True)
+                busiest_days = sorted_days[:3]  # Top 3 días más ocupados
+                
+                # Encontrar horarios más ocupados por día
+                peak_times_by_day = {}
+                for day, time_slots in popular_times['graph_results'].items():
+                    if time_slots:
+                        max_slot = max(time_slots, key=lambda x: x.get('busyness_score', 0))
+                        if max_slot.get('busyness_score', 0) > 0:
+                            peak_times_by_day[day] = {
+                                'time': max_slot.get('time', ''),
+                                'score': max_slot.get('busyness_score', 0),
+                                'info': max_slot.get('info', '')
+                            }
+                
+                popular_times_info = f"""
+                
+                DATOS DE HORARIOS POPULARES:
+                - Promedio general de ocupación: {overall_avg}%
+                - Promedio por día: {daily_averages}
+                - Días más ocupados: {[f"{day} ({score}%)" for day, score in busiest_days]}
+                - Horarios pico (muy ocupados): {peak_hours[:8]}  # Top 8
+                - Horario más ocupado por día: {peak_times_by_day}
+                - Información en tiempo real: {popular_times.get('live_hash', {}).get('info', 'No disponible')}
+                """
+                
+                # Análisis específico de popular_times para el prompt
+                popular_times_analysis = f"""
+                
+                ANÁLISIS ESPECÍFICO DE HORARIOS Y DEMANDA:
+                
+                **Patrones de Ocupación:**
+                - Ocupación promedio general: {overall_avg}%
+                - Días de mayor actividad: {[day for day, _ in busiest_days]}
+                - Días de menor actividad: {[day for day, _ in sorted_days[-3:]]}
+                
+                **Horarios Pico Identificados:**
+                {chr(10).join([f"- {peak}" for peak in peak_hours[:5]])}
+                
+                **Análisis de Rentabilidad por Horario:**
+                - Horarios de mayor demanda: {[f"{day} {data['time']} ({data['score']}%)" for day, data in list(peak_times_by_day.items())[:3]]}
+                - Horarios de menor demanda: {[f"{day} {data['time']} ({data['score']}%)" for day, data in list(peak_times_by_day.items())[-3:]]}
+                
+                **Implicaciones para el Negocio:**
+                - El negocio tiene una demanda {overall_avg}% de ocupación promedio
+                - Los días más rentables son: {[day for day, _ in busiest_days]}
+                - Los horarios pico sugieren una base de clientes estable
+                - Hay oportunidades de optimización en días de menor actividad
+                """
+        
         prompt = f"""
         Analiza el siguiente negocio y proporciona una evaluación de relevancia:
 
@@ -116,51 +286,66 @@ class PymeService:
             "title": "{pyme_data.get('title', '')}",
             "type": "{pyme_data.get('type', '')}",
             "website": "{pyme_data.get('website', '')}"
-        }}
+        }}{popular_times_info}{popular_times_analysis}
 
         INSTRUCCIONES DE ANÁLISIS:
 
         Evalúa la **relevancia** del negocio en una escala del 0 al 100 basándote en:
 
-        1. **Calificación y Reputación** (40% del score):
+        1. **Calificación y Reputación** (30% del score):
            - Calificación promedio y número de reseñas
            - Calidad del feedback de los clientes
            - Consistencia en la satisfacción del cliente
 
-        2. **Presencia y Visibilidad** (30% del score):
+        2. **Análisis de Horarios y Demanda** (25% del score):
+           - Patrones de ocupación y horarios pico
+           - Consistencia en la demanda a lo largo de la semana
+           - Horarios de mayor actividad y rentabilidad
+           - Análisis de días más y menos ocupados
+           - Si no hay datos de horarios, asigna 0 puntos a esta categoría
+
+        3. **Presencia y Visibilidad** (20% del score):
            - Información de contacto completa
            - Sitio web funcional
            - Descripción clara y atractiva
 
-        3. **Competitividad y Posicionamiento** (20% del score):
+        4. **Competitividad y Posicionamiento** (15% del score):
            - Precio competitivo para el tipo de negocio
            - Diferenciación en el mercado
            - Tipo de negocio y demanda
 
-        4. **Potencial de Crecimiento** (10% del score):
+        5. **Potencial de Crecimiento** (10% del score):
            - Oportunidades de mejora identificadas
            - Capacidad de escalabilidad
            - Fortalezas del negocio
 
-        **Cálculo del Score**:
+        **Cálculo del Score:**
         - Comienza con un puntaje base de **70 puntos**
         - Ajusta según los criterios anteriores
+        - Si no hay datos de popular_times, asigna 0 puntos a esa categoría
+        - Los datos de horarios son CRÍTICOS para evaluar la demanda real
         - Asegúrate de que el puntaje final esté entre **0 y 100**
 
-        **Resumen del Análisis**:
-        - Proporciona un resumen completo y conciso (300-800 caracteres)
-        - Incluye fortalezas principales del negocio
-        - Identifica áreas de mejora específicas
-        - Da recomendaciones accionables
+        **Resumen del Análisis:**
+        - Proporciona un resumen ULTRA CONCISO de máximo 50 palabras
+        - Incluye SOLO la fortaleza más importante del negocio
+        - Identifica la oportunidad de mejora más crítica
+        - Da UNA recomendación específica y accionable
         - Usa un tono positivo y constructivo
-        - Incluye emojis apropiados
-        - NO excedas los 800 caracteres
+        - Incluye emojis apropiados (máximo 1-2)
+        - **Menciona específicamente los patrones de horarios y su impacto en la relevancia**
+        - Analiza cómo los horarios populares afectan la rentabilidad
+        - Sugiere estrategias basadas en los datos de ocupación
+        - **MANTÉN EL RESUMEN ULTRA BREVE Y DIRECTO AL PUNTO**
 
-        **Formato de Respuesta**:
+        **Formato de Respuesta:**
         - "relevance_score": puntuación de 0 a 100
         - "analysis_summary": resumen completo del análisis (máximo 800 caracteres)
 
-        IMPORTANTE: Responde ÚNICAMENTE con el JSON estructurado según el esquema proporcionado.
+        IMPORTANTE: 
+        - Responde ÚNICAMENTE con el JSON estructurado según el esquema proporcionado.
+        - Los datos de popular_times son FUNDAMENTALES para el análisis.
+        - Si hay datos de horarios, úsalos para justificar el score.
         """
         
         return prompt
