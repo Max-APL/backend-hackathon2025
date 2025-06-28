@@ -5,7 +5,6 @@ from firebase_admin import credentials, firestore
 from app.api.v1.api_router import router as api_router
 from app.core.firebase_config import firebase_config
 import requests
-from app.api.v1.api_router import router as api_router
 import os
 
 # --- CONFIGURACIÓN DE FIREBASE ---

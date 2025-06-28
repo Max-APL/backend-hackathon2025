@@ -1,7 +1,6 @@
 import os
 from typing import Optional, Type
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from pydantic import BaseModel
 
 class GeminiService:
@@ -11,12 +10,12 @@ class GeminiService:
         """
         # Usar la API key proporcionada o la variable de entorno
         if api_key:
-            self.client = genai.Client(api_key=api_key)
+            genai.configure(api_key=api_key)
         else:
             # Intentar usar la variable de entorno
             env_api_key = os.getenv('GEMINI_API_KEY')
             if env_api_key:
-                self.client = genai.Client(api_key=env_api_key)
+                genai.configure(api_key=env_api_key)
             else:
                 raise ValueError("Se requiere una API key de Gemini")
     
@@ -47,36 +46,25 @@ class GeminiService:
             if root_prompt:
                 full_prompt = f"{root_prompt}\n\n{prompt}"
             
-            # Configurar la generación con schema estructurado
-            config = types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=schema,
-                temperature=temperature
-            )
+            # Generar contenido usando el modelo
+            model_instance = genai.GenerativeModel(model)
+            response = model_instance.generate_content(full_prompt)
             
-            # Generar contenido estructurado
-            response = self.client.models.generate_content(
-                model=model,
-                contents=full_prompt,
-                config=config
-            )
-            
-            # Usar el método parsed para obtener el objeto estructurado
-            if hasattr(response, 'parsed') and response.parsed:
-                if isinstance(response.parsed, schema):
-                    return response.parsed
-                else:
-                    # Convertir dict a schema
-                    parsed_dict = response.parsed if isinstance(response.parsed, dict) else {}
-                    return schema(**parsed_dict)
-            else:
-                # Fallback: intentar parsear el texto JSON
-                import json
-                if response.text:
+            # Intentar parsear la respuesta como JSON
+            import json
+            if response.text:
+                try:
+                    # Intentar parsear como JSON
                     parsed_data = json.loads(response.text)
                     return schema(**parsed_data)
-                else:
-                    raise ValueError("No se recibió respuesta del modelo")
+                except json.JSONDecodeError:
+                    # Si no es JSON válido, crear un objeto con el texto
+                    return schema(
+                        relevance_score=50,  # Valor por defecto
+                        analysis_summary=response.text[:2000]  # Limitar a 2000 caracteres
+                    )
+            else:
+                raise ValueError("No se recibió respuesta del modelo")
             
         except Exception as e:
             raise Exception(f"Error al generar objeto con schema: {str(e)}")
@@ -86,10 +74,8 @@ class GeminiService:
         Genera contenido simple usando Gemini (sin schema)
         """
         try:
-            response = self.client.models.generate_content(
-                model=model,
-                contents=prompt
-            )
+            model_instance = genai.GenerativeModel(model)
+            response = model_instance.generate_content(prompt)
             return response.text or ""
         except Exception as e:
             raise Exception(f"Error al generar contenido: {str(e)}") 
