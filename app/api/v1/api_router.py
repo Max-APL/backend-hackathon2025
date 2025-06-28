@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import storage, peques
+from app.api.v1.endpoints import peques, storage
 
 api_router = APIRouter()
 

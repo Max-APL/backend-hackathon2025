@@ -1,5 +1,5 @@
 ### 🔍 Obtener datos desde la hoja "Results" (fija en backend)
-GET http://localhost:8000/peques/from-sheet
+GET https://backend-hackathon2025-240363371566.us-central1.run.app
 Accept: application/json
 
 
@@ -36,6 +36,6 @@ GET http://localhost:8000/peques/scrapear-y-filtrar?lat=-16.5206962&lng=-68.2064
 Accept: application/json
 
 
-### 3. Endpoint combinado: Scrapear y obtener resultados (inteligente)
+### 3. Endpoint combinado: Scrapear y obtener resultados (inteligente) FINAL ESTE SI AL FIN
 POST http://localhost:8000/peques/scrapear-y-buscar?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
 Accept: application/json

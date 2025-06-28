@@ -12,7 +12,7 @@ import httpx
 import asyncio
 
 # URL de n8n webhook
-N8N_WEBHOOK_URL = "https://maxpasten.app.n8n.cloud/webhook-test/f182d304-1d67-4798-bd58-24dc84caec48"
+N8N_WEBHOOK_URL = "https://maxpasten.app.n8n.cloud/webhook/f182d304-1d67-4798-bd58-24dc84caec48"
 
 
 
@@ -23,7 +23,7 @@ def iniciar_scrapeo(tipo: str, lat: float, lng: float) -> str:
     print(f"📌 URL generada y enviada al sheet: {url_scrape}")
 
     # Activar N8N
-    webhook_url = "https://maxpasten.app.n8n.cloud/webhook-test/f182d304-1d67-4798-bd58-24dc84caec48"
+    webhook_url = N8N_WEBHOOK_URL
     try:
         requests.get(webhook_url)
         print("🚀 N8N llamado exitosamente.")
@@ -98,7 +98,7 @@ async def scrapear_y_retornar_cercanos_async(lat: float, lng: float, tipo: str =
     print("✅ URL agregada a hoja de scraping")
 
     # Paso 2: Llamar al Webhook de N8N
-    webhook_url = "https://maxpasten.app.n8n.cloud/webhook-test/f182d304-1d67-4798-bd58-24dc84caec48"
+    webhook_url = N8N_WEBHOOK_URL
     print("🚀 Webhook de N8N activado")
     try:
         requests.get(webhook_url)
@@ -153,7 +153,7 @@ def get_nearby_peques(lat, lng, max_km=1.0):
 def scrapear_y_retornar_cercanos(lat: float, lng: float, tipo: str = "restaurante"):
     url = generar_url_scraping(tipo, lat, lng)
     agregar_a_hoja_scrape(url)
-    requests.get("https://maxpasten.app.n8n.cloud/webhook-test/f182d304-1d67-4798-bd58-24dc84caec48")
+    requests.get(N8N_WEBHOOK_URL)
     time.sleep(4)  # Espera a que el n8n actualice la hoja
     return get_nearby_peques(lat, lng)
 
