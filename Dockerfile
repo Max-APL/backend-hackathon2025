@@ -8,9 +8,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código de la aplicación (excluyendo archivos sensibles)
-COPY app/ ./app/
-COPY main.py .
+# Copiar todo el código de la aplicación (excluyendo archivos sensibles via .dockerignore)
+COPY . .
 
 # Exponer el puerto en el que la app se ejecuta
 EXPOSE 8080
