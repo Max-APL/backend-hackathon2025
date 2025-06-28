@@ -1,4 +1,5 @@
-import asyncio
+import time
+from http.client import HTTPException
 from typing import List
 
 from fastapi import APIRouter, Query, requests
@@ -49,6 +50,28 @@ def get_peques_cercanos(lat: float = Query(...), lng: float = Query(...), max_km
     return {"cercanos": datos, "cantidad": len(datos)}
 
 
+@router.post("/peques/scrapear-y-buscar")
+def scrapear_y_buscar(tipo: str = "restaurante", lat: float = Query(...), lng: float = Query(...)):
+    # Iniciar el scraping
+    url = iniciar_scrapeo(tipo, lat, lng)
+
+    # Espera activa hasta que aparezcan resultados nuevos en esa zona
+    tiempo_inicio = time.time()
+    TIMEOUT = 30  # segundos máximos de espera
+    INTERVALO = 2  # segundos entre chequeos
+
+    while time.time() - tiempo_inicio < TIMEOUT:
+        resultados = obtener_peques_cercanos(lat, lng)
+        if resultados:
+            return {
+                "mensaje": "Scrapeo completado y resultados encontrados",
+                "url_scrapeada": url,
+                "cantidad": len(resultados),
+                "cercanos": resultados,
+            }
+        time.sleep(INTERVALO)
+
+    raise HTTPException(status_code=504, detail="No se encontraron resultados dentro del tiempo de espera.")
 
 @router.get("/peques/scrapear-y-filtrar")
 async def scrapear_y_filtrar(
