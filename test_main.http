@@ -37,5 +37,24 @@ Accept: application/json
 
 
 ### 3. Endpoint combinado: Scrapear y obtener resultados (inteligente) FINAL ESTE SI AL FIN
-POST http://localhost:8000/api/v1/peques/scrapear-y-buscar?tipo=restaurante&lat=-16.545103&lng=-68.17594319999999
+POST http://localhost:8000/api/v1/peques/scrapear-y-buscar?tipo=restaurante&lat=-17.788312&lng=-63.18275
 Accept: application/json
+
+
+### POST /generar-contrato
+POST http://localhost:8000/generar-contrato
+Content-Type: application/json
+
+{
+  "negocio": "Panadería Doña Rosita",
+  "inversor": "Carlos Pérez",
+  "monto": "7000 Bs",
+  "condiciones": "9 meses, interés del 5%"
+}
+
+
+### POST /analizar-contrato
+POST http://localhost:8000/analizar-contrato
+Content-Type: multipart/form-data
+
+<sube un archivo PDF llamado Contrato_20250629_xxxx.pdf>
